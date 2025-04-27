@@ -112,5 +112,7 @@ Feel free to check out the project repository, fork it, or contribute to further
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+This project is protected and **not open-source**.  
+You are **not permitted** to copy, modify, distribute, or use any part of this project without **explicit written permission** from the authors.  
+Unauthorized use will be considered a violation of intellectual property rights.
 
