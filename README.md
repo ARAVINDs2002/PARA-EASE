@@ -102,6 +102,7 @@ ParaEase is a smart, affordable, and multi-functional system aimed at improving 
 
 ## Acknowledgments
 
+- A huge thanks to our department staffs who was and will always be with us in what ever phase of development of the prototype.
 - **ESP32** and **Blynk** for their excellent platforms that made this project possible.
 - **Sensor manufacturers** for providing affordable and reliable sensors.
 - **Open-source community** for their contributions to making smart home solutions more accessible.
