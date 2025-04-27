@@ -1,0 +1,174 @@
+#define BLYNK_TEMPLATE_ID "TMPL3ZZ_JmETV"
+#define BLYNK_TEMPLATE_NAME "home automations"
+#define BLYNK_AUTH_TOKEN "SkducdgHvGnLFs5aiBhytSbrCs6wlWRH"
+
+#define BLYNK_PRINT Serial
+#include <WiFi.h>
+#include <BlynkSimpleEsp32.h>
+#include <DHT.h>
+#include <WiFiClientSecure.h>
+#include <UniversalTelegramBot.h>
+
+// WiFi Credentials
+char ssid[] = "Real sus";     
+char pass[] = "12345678";  
+
+// Telegram Bot Credentials
+#define BOT_TOKEN "8131500578:AAEXc_FcH6pZ86Yu3LDfYDaNZx64QMZOXMw"
+#define CHAT_ID "1249226956" 
+
+WiFiClientSecure client;
+UniversalTelegramBot bot(BOT_TOKEN, client);
+
+// DHT Sensor Configuration
+#define DHTPIN 15              
+#define DHTTYPE DHT11          
+DHT dht(DHTPIN, DHTTYPE);
+
+// LED Configurations
+#define LED_PIN 2              
+#define GREEN_LED_PIN 26      
+#define IR_SENSOR_LED 34       
+
+// MQ-2 Gas Sensor Configuration
+#define MQ2_PIN 35  
+
+// IR Sensor Configuration
+#define IR_SENSOR_PIN 32  
+#define IR_LED_PIN 27       
+
+// Touch Sensor Configuration
+#define TOUCH_SENSOR_PIN 5  
+
+// LDR Sensor Configuration
+#define LDR_PIN 33  
+#define LIGHT_LED 27 
+
+// Buzzer Configuration
+#define BUZZER_PIN 12 // Buzzer connected to pin 12
+
+BlynkTimer timer;
+bool lastLedState = false;
+
+// Store last states to avoid duplicate messages
+bool lastIRState = HIGH;
+bool lastTouchState = HIGH;
+
+// Function to control LED from Blynk App (V0)
+BLYNK_WRITE(V0) {
+    int ledState = param.asInt();
+    digitalWrite(LED_PIN, ledState);
+    Serial.println(ledState ? "🔵 LED ON" : "⚫ LED OFF");
+}
+
+// Function to sound the buzzer
+void soundBuzzer() {
+    digitalWrite(BUZZER_PIN, HIGH);  // Turn on buzzer
+    delay(1000);  // Sound the buzzer for 1 second
+    digitalWrite(BUZZER_PIN, LOW);   // Turn off buzzer
+    delay(1000);  // Delay between buzzes
+}
+
+// Function to Read IR Sensor & Touch Sensor and Send Telegram Alert
+void checkSensors() {
+    int irValue = digitalRead(IR_SENSOR_PIN);
+    int touchValue = digitalRead(TOUCH_SENSOR_PIN); 
+
+    Blynk.virtualWrite(V7, irValue);
+    Blynk.virtualWrite(V8, touchValue);
+
+    Serial.print("IR Sensor: ");
+    Serial.println(irValue ? "🟢 No Motion" : "🔴 Motion Detected");
+
+    Serial.print("Touch Sensor: ");
+    Serial.println(touchValue ? "🟢 Not Touched" : "🔴 Touched");
+
+    // IR Sensor Alert (only when state changes)
+    if (irValue == LOW && lastIRState == HIGH) {
+        bot.sendMessage(CHAT_ID, "🚨 Motion Detected by IR Sensor! 🚨", "");
+        Serial.println("📩 IR Sensor Alert sent!");
+        soundBuzzer();  // Trigger buzzer alert
+    }
+    lastIRState = irValue;
+
+    // Touch Sensor Alert (only when state changes)
+    if (touchValue == LOW && lastTouchState == HIGH) {  
+        bot.sendMessage(CHAT_ID, "🚨 Touch Sensor Activated! 🚨", "");
+        Serial.println("📩 Touch Sensor Alert sent!");
+        soundBuzzer();  // Trigger buzzer alert
+    }
+    lastTouchState = touchValue;
+}
+
+// Function to Read Gas Sensor and Send Alerts
+void checkGas() {
+    int gasValue = analogRead(MQ2_PIN);
+    Serial.print("🔥 Gas Level: ");
+    Serial.println(gasValue);
+    
+    Blynk.virtualWrite(V10, gasValue);  // Send gas value to Blynk
+
+    if (gasValue > 1500) {  // Threshold for gas detection
+        bot.sendMessage(CHAT_ID, "⚠️ High Gas Levels Detected! Take action! ⚠️", "");
+        Serial.println("📩 Gas Sensor Alert sent!");
+        soundBuzzer();  // Trigger buzzer alert
+    }
+}
+
+// Function to Check Light Levels and Control LED
+void checkLight() {
+    int lightValue = analogRead(LDR_PIN);  
+    Serial.print("LDR Value: ");
+    Serial.println(lightValue);
+
+    if (lightValue < 1500) {  // Dark environment
+        digitalWrite(LIGHT_LED, HIGH);  
+        Serial.println("🌙 Low Light - LED ON");
+    } else {
+        digitalWrite(LIGHT_LED, LOW);   
+        Serial.println("☀️ Bright Light - LED OFF");
+    }
+
+    Blynk.virtualWrite(V9, lightValue);  
+}
+
+void setup() {
+    Serial.begin(115200);
+    dht.begin();
+    
+    pinMode(LED_PIN, OUTPUT);
+    pinMode(MQ2_PIN, INPUT);  // Changed from INPUT_PULLUP to INPUT (analog sensor)
+    pinMode(IR_SENSOR_PIN, INPUT);
+    pinMode(IR_LED_PIN, OUTPUT);
+    pinMode(IR_SENSOR_LED, OUTPUT);  
+    pinMode(TOUCH_SENSOR_PIN, INPUT);
+    pinMode(LDR_PIN, INPUT);
+    pinMode(LIGHT_LED, OUTPUT);
+    pinMode(BUZZER_PIN, OUTPUT); // Initialize Buzzer Pin
+
+    digitalWrite(IR_LED_PIN, LOW);
+    digitalWrite(IR_SENSOR_LED, LOW);  
+
+    Serial.print("🌍 Connecting to WiFi");
+    WiFi.begin(ssid, pass);
+    client.setInsecure();  
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.print(".");
+    }
+    Serial.println("\n✅ WiFi Connected!");
+
+    bot.sendMessage(CHAT_ID, "🏠 Home Automation Bot is Online!", "");
+
+    Blynk.config(BLYNK_AUTH_TOKEN);
+    Blynk.connect();
+
+    timer.setInterval(2000L, checkSensors);
+    timer.setInterval(2000L, checkGas);  // Added gas sensor check
+    timer.setInterval(2000L, checkLight);
+}
+
+void loop() {
+    Blynk.run();
+    timer.run();
+}
