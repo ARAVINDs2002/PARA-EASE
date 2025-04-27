@@ -109,7 +109,6 @@ ParaEase is a smart, affordable, and multi-functional system aimed at improving 
 
 ---
 
-Feel free to check out the project repository, fork it, or contribute to further improving the solution.
 
 ## License
 
