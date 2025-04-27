@@ -1,7 +1,7 @@
 # ParaEase: Smart IoT Solution for Differently Abled Individuals
 ### System Diagram
 
-Below is the diagram representing how the **ParaEase System** works. It shows how each sensor and output device is connected to the **ESP32**.
+Below is the real protptype representing the Para Ease system.
 
 ![ParaEase System Diagram](assets/paraEase_system_diagram.png)
 
