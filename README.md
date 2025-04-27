@@ -80,6 +80,21 @@ ParaEase is a smart, affordable, and multi-functional system aimed at improving 
 3. Set up the **Blynk app** and connect it to the ESP32 via Wi-Fi.
 4. Power up the system and test the sensors and alert mechanisms.
 
+### 1. Touch Sensor Activation
+![Touch Sensor Activation](assets/touch-ezgif.com-video-to-gif-converter.gif)
+
+---
+
+### 2. Gas Alert System
+![Gas Alert System](assets/gasalert-ezgif.com-video-to-gif-converter.gif)
+
+---
+
+### 3. LED Control via Blynk
+![LED Control via Blynk](assets/ledonblink-ezgif.com-video-to-gif-converter.gif)
+
+---
+
 ## Future Work
 
 - **Voice Assistant Integration**: Add voice commands for controlling various features of the system.
